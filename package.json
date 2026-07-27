@@ -3,9 +3,9 @@
   "version": "0.1.0",
   "description": "A lightweight TypeScript library for deterministic hashing of JSON-compatible values",
   "keywords": [
-    "typescript",
     "deterministic",
-    "hash"
+    "hash",
+    "typescript"
   ],
   "homepage": "https://github.com/smokeeaasd/kokuin#readme",
   "bugs": {
