@@ -208,6 +208,18 @@ describe('circular references', () => {
     a.self = a
     expect(hash(a)).toBe(hash(a))
   })
+
+  it('self-reference and parent-reference produce different hashes', () => {
+    const innerA: Record<string, unknown> = {}
+    const case1: Record<string, unknown> = { a: innerA }
+    innerA.ref = innerA
+
+    const innerB: Record<string, unknown> = {}
+    const case2: Record<string, unknown> = { a: innerB }
+    innerB.ref = case2
+
+    expect(hash(case1)).not.toBe(hash(case2))
+  })
 })
 
 describe('unsupported types throw', () => {

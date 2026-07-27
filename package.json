@@ -1,6 +1,6 @@
 {
   "name": "kokuin",
-  "version": "0.1.2",
+  "version": "0.2.0",
   "description": "A lightweight TypeScript library for deterministic hashing of JSON-compatible values",
   "keywords": [
     "deterministic",

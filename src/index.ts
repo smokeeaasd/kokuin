@@ -61,7 +61,19 @@ function writeString(writer: Writer, str: string): void {
   writer.writeBytes(encoded)
 }
 
-function serialize(value: unknown, writer: Writer, stack: Set<object>, depth: number): void {
+function writeUint16(writer: Writer, value: number): void {
+  const buf = new Uint8Array(2)
+  new DataView(buf.buffer).setUint16(0, value)
+  writer.writeBytes(buf)
+}
+
+function serialize(
+  value: unknown,
+  writer: Writer,
+  stack: object[],
+  stackSet: Set<object>,
+  depth: number
+): void {
   if (depth > MAX_DEPTH) {
     throw new Error('Excessive nesting')
   }
@@ -112,8 +124,11 @@ function serialize(value: unknown, writer: Writer, stack: Set<object>, depth: nu
 
   const obj = value as object
 
-  if (stack.has(obj)) {
+  if (stackSet.has(obj)) {
+    const idx = stack.indexOf(obj)
+    const distance = stack.length - 1 - idx
     writer.writeByte(CIRCULAR)
+    writeUint16(writer, distance)
     return
   }
 
@@ -124,28 +139,33 @@ function serialize(value: unknown, writer: Writer, stack: Set<object>, depth: nu
       throw new Error(`Cannot hash ${tag.slice(8, -1)} values`)
     }
 
-    stack.add(obj)
+    stack.push(obj)
+    stackSet.add(obj)
     const result = (obj as { toJSON(): unknown }).toJSON()
-    serialize(result, writer, stack, depth + 1)
-    stack.delete(obj)
+    serialize(result, writer, stack, stackSet, depth + 1)
+    stackSet.delete(obj)
+    stack.pop()
     return
   }
 
-  stack.add(obj)
+  stack.push(obj)
+  stackSet.add(obj)
 
   if (Array.isArray(value)) {
     writer.writeByte(ARRAY)
     for (const element of value) {
-      serialize(element, writer, stack, depth + 1)
+      serialize(element, writer, stack, stackSet, depth + 1)
     }
     writer.writeByte(END)
-    stack.delete(value)
+    stackSet.delete(value)
+    stack.pop()
     return
   }
 
   const proto = Object.getPrototypeOf(value)
   if (proto !== Object.prototype && proto !== null) {
-    stack.delete(value)
+    stackSet.delete(value)
+    stack.pop()
     throw new Error('Cannot hash non-plain objects')
   }
 
@@ -161,11 +181,12 @@ function serialize(value: unknown, writer: Writer, stack: Set<object>, depth: nu
     return 0
   })
   for (const key of keys) {
-    serialize(key, writer, stack, depth + 1)
-    serialize((value as Record<string, unknown>)[key], writer, stack, depth + 1)
+    serialize(key, writer, stack, stackSet, depth + 1)
+    serialize((value as Record<string, unknown>)[key], writer, stack, stackSet, depth + 1)
   }
   writer.writeByte(END)
-  stack.delete(value)
+  stackSet.delete(value)
+  stack.pop()
 }
 
 function toHex(bytes: Uint8Array): string {
@@ -185,6 +206,6 @@ function toHex(bytes: Uint8Array): string {
  * symbols. */
 export function hash(value: unknown): string {
   const writer = new Writer()
-  serialize(value, writer, new Set<object>(), 0)
+  serialize(value, writer, [], new Set<object>(), 0)
   return toHex(sha256(writer.toBytes()))
 }
