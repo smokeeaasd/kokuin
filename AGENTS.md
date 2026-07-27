@@ -5,9 +5,9 @@ Zero-dependency TypeScript library for deterministic hashing of JSON-compatible 
 ## Commands (run from repo root)
 
 | Command              | Action                                       |
-| -------------------- | --------------------------------------------- |
-| `pnpm build`         | Build with tsdown → `dist/*.mjs` + `*.d.mts`  |
-| `pnpm test`          | `vitest run` (tests in `tests/**/*.test.ts`)  |
+| -------------------- | -------------------------------------------- |
+| `pnpm build`         | Build with tsdown → `dist/*.mjs` + `*.d.mts` |
+| `pnpm test`          | `vitest run` (tests in `tests/**/*.test.ts`) |
 | `pnpm test:watch`    | `vitest` (watch mode)                        |
 | `pnpm test:coverage` | `vitest run --coverage`                      |
 | `pnpm lint`          | `oxlint`                                     |

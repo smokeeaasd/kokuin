@@ -132,7 +132,7 @@ Two things worth knowing about those conversions, since kokuin can't check them 
 Hash a JSON-compatible value into a string. Returns the same output for the same logical value, regardless of key order.
 
 | Type                   | Description                         |
-| ---------------------- | ------------------------------------ |
+| ---------------------- | ----------------------------------- |
 | `hash(value: unknown)` | Returns a deterministic string hash |
 
 There is no `hash.sha256()`, no algorithm option, and no separate `serialize`/`digest` exports — the internal pipeline is not part of the public API. The algorithm may change in a major version; the stability contract above does not.
