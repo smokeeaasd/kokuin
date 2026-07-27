@@ -176,6 +176,13 @@ function toHex(bytes: Uint8Array): string {
   return hex
 }
 
+/** Hash a JSON-compatible value into a deterministic string.
+ *
+ * Returns the same output for the same logical value, regardless of key
+ * order. Accepts primitives, arrays, plain objects, and objects with a
+ * `toJSON()` method. Throws for unsupported types such as `Map`, `Set`,
+ * `Date`, `RegExp`, class instances without `toJSON()`, functions, and
+ * symbols. */
 export function hash(value: unknown): string {
   const writer = new Writer()
   serialize(value, writer, new Set<object>(), 0)
