@@ -27,20 +27,20 @@ hash([3, 2, 1])
 // → different hash — array order matters
 ```
 
-The contract: **the same logical value always produces the same hash.** This is a stronger guarantee than `JSON.stringify(value)` + hash — `JSON.stringify` silently breaks on key order and throws on circular references. kokuin normalizes the former and tolerates the latter.
+The contract: **the same logical value always produces the same hash.** This is a stronger guarantee than `JSON.stringify(value)` + hash. `JSON.stringify` silently breaks on key order and throws on circular references. kokuin normalizes the former and tolerates the latter.
 
-This is not a cryptographic library. It is not designed to resist intentional collisions from malicious input — it's a structural identity tool for cache keys, deduplication, and idempotency of JSON-shaped payloads.
+This is not a cryptographic library. It is not designed to resist intentional collisions from malicious input. It's a structural identity tool for cache keys, deduplication, and idempotency of JSON-shaped payloads.
 
 ## Scope
 
 kokuin hashes:
 
-- **Primitives** — `string`, `number`, `boolean`, `null`, `undefined`, `bigint`
-- **Arrays** — order matters
-- **Plain objects** — key order never matters
-- **Objects with `toJSON()`** — the return value of `toJSON()` is hashed in place of the object itself
+- **Primitives:** `string`, `number`, `boolean`, `null`, `undefined`, `bigint`
+- **Arrays:** order matters
+- **Plain objects:** key order never matters
+- **Objects with `toJSON()`:** the return value of `toJSON()` is hashed in place of the object itself
 
-That's the whole surface. There is no special handling for `Map`, `Set`, `Date`, `RegExp`, or class instances — see [Not supported](#not-supported) for why, and how to convert them.
+That's the whole surface. There is no special handling for `Map`, `Set`, `Date`, `RegExp`, or class instances. See [Not supported](#not-supported) for why, and how to convert them.
 
 ### Primitives
 
@@ -61,7 +61,7 @@ hash({ a: 1 }) === hash({ a: 1, b: undefined }) // false — presence of the key
 
 ### `toJSON()`
 
-Any object exposing `toJSON()` is hashed via its return value — the same rule `JSON.stringify` follows. This is how you bring in types kokuin doesn't special-case:
+Any object exposing `toJSON()` is hashed via its return value, the same rule `JSON.stringify` follows. This is how you bring in types kokuin doesn't special-case:
 
 ```ts
 class Money {
@@ -104,7 +104,7 @@ hash(new WeakSet())
 hash(new Promise(() => {}))
 ```
 
-These aren't oversights — they're the types where representing "identity" in JavaScript stops being reliable. A class name survives minification only by luck; `Date`/`Map`/`Set` can fail `instanceof` across realms (an iframe, a worker, a second copy of the package). Rather than papering over that with a fallback that sometimes lies, kokuin asks you to convert explicitly:
+These aren't oversights. They're the types where representing "identity" in JavaScript stops being reliable. A class name survives minification only by luck; `Date`/`Map`/`Set` can fail `instanceof` across realms (an iframe, a worker, a second copy of the package). Rather than papering over that with a fallback that sometimes lies, kokuin asks you to convert explicitly:
 
 ```ts
 hash(Object.fromEntries(myMap)) // convert Map → object
@@ -114,16 +114,16 @@ hash(myDate.toISOString()) // convert Date → string
 
 Two things worth knowing about those conversions, since kokuin can't check them for you:
 
-- `Object.fromEntries` coerces every key to a string — a `Map` with both `1` and `'1'` as keys collapses into one.
+- `Object.fromEntries` coerces every key to a string: a `Map` with both `1` and `'1'` as keys collapses into one.
 - Sorting a converted `Set` is your responsibility if you want insertion order to stay irrelevant; `[...mySet]` alone preserves insertion order.
 
 ## Stability
 
 - Deterministic: same logical value → same hash, every time.
-- Stable across runtimes: same hash on Node, Bun, Deno, and modern browsers. All internal ordering uses binary string comparison — never `localeCompare` or anything dependent on Unicode/ICU tables, which vary between engine versions.
-- No exposed intermediate serialization — the canonical representation is an implementation detail, never part of the public contract.
+- Stable across runtimes: same hash on Node, Bun, Deno, and modern browsers. All internal ordering uses binary string comparison, never `localeCompare` or anything dependent on Unicode/ICU tables, which vary between engine versions.
+- No exposed intermediate serialization; the canonical representation is an implementation detail, never part of the public contract.
 - Depth-limited: excessively deep input fails with an explicit error instead of silently overflowing the stack.
-- No class or constructor identity is ever part of the hash — by design, not by omission. See [Not supported](#not-supported).
+- No class or constructor identity is ever part of the hash: by design, not by omission. See [Not supported](#not-supported).
 
 ## API
 
@@ -135,11 +135,11 @@ Hash a JSON-compatible value into a string. Returns the same output for the same
 | ---------------------- | ----------------------------------- |
 | `hash(value: unknown)` | Returns a deterministic string hash |
 
-There is no `hash.sha256()`, no algorithm option, and no separate `serialize`/`digest` exports — the internal pipeline is not part of the public API. The algorithm may change in a major version; the stability contract above does not.
+There is no `hash.sha256()`, no algorithm option, and no separate `serialize`/`digest` exports; the internal pipeline is not part of the public API. The algorithm may change in a major version; the stability contract above does not.
 
 ### Errors
 
-- `Error` — thrown by `hash()` when the value is `Map`, `Set`, `Date`, `RegExp`, `Function`, `Symbol`, `WeakMap`, `WeakSet`, `WeakRef`, `Promise`, or a class instance without `toJSON()`, or when nesting exceeds the maximum supported depth
+- `Error`: thrown by `hash()` when the value is `Map`, `Set`, `Date`, `RegExp`, `Function`, `Symbol`, `WeakMap`, `WeakSet`, `WeakRef`, `Promise`, or a class instance without `toJSON()`, or when nesting exceeds the maximum supported depth
 
 ## License
 
