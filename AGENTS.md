@@ -38,7 +38,7 @@ CI runs in parallel: typecheck + lint + format:check → test → build.
 - Single package (not a monorepo). `pnpm-workspace.yaml` only disables git checks on publish.
 - Output is ESM-only: `exports` map points to `./dist/index.mjs` + `./dist/index.d.mts`.
 - Node >=20, pnpm 11.15.1, TypeScript 7.x.
-- `vitest` configured with `globals: true`, but tests **import** `describe`/`it`/`expect` from `vitest` explicitly (style convention). Tests import from `../src/index.js` (`.js` extension).
+- `vitest` configured with `globals: true`, but tests **import** `describe`/`it`/`expect` from `vitest` explicitly (style convention).
 - `lint-staged` runs `oxlint --fix && oxfmt --write` on staged `*.ts` files.
 - Release: push tag `v*` → CI runs `pnpm build && pnpm publish --no-git-checks --provenance`.
 
